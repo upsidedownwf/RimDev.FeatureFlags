@@ -22,5 +22,14 @@ namespace RimDev.AspNetCore.FeatureFlags
             return GetFeatureTypes(featureFlagAssemblies)
                 .SingleOrDefault(x => x.Name == featureName);
         }
+        public static Type GetFeatureType(
+            this Assembly featureFlagAssembly,
+            string featureName)
+        {
+            var x= featureFlagAssembly.GetTypes()
+                .Where(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(Feature)));
+            return featureFlagAssembly.GetTypes()
+                .SingleOrDefault(type => type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(Feature)) && type.Name == featureName);
+        }
     }
 }

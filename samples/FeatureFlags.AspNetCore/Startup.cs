@@ -4,14 +4,28 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Driver;
 using RimDev.AspNetCore.FeatureFlags;
 using System.Threading.Tasks;
 
 namespace FeatureFlags.AspNetCore
 {
-    public class Startup
+
+    public class ConfigurationAppsettingKeyNameConstants
     {
-        private readonly FeatureFlagOptions options;
+        public const string ProjectionStoreBaseUrl = "ProjectionStore:BaseUrl";
+        public const string ProjectionStoreUserName = "ProjectionStore:UserName";
+        public const string ProjectionStoreUserPassword = "ProjectionStore:UserPassword";
+        public const string ProjectionStoreClusterName = "ProjectionStore:ClusterName";
+        public const string ProjectionStoreDatabaseName = "ProjectionStore:DatabaseName";
+        public const string ProjectionStoreWriteRetries = "ProjectionStore:WriteRetries";
+        public const string ProjectionStoreWriteConcern = "ProjectionStore:WriteConcern";
+        public const string ProjectionStoreCollectionName = "ProjectionStore:CollectionName";
+    }
+
+public class Startup
+    {
+        private  FeatureFlagOptions options;
 
         public IConfiguration Configuration { get; }
 
@@ -19,16 +33,32 @@ namespace FeatureFlags.AspNetCore
         {
             Configuration = configuration;
 
-            options = new FeatureFlagOptions()
-                .UseInMemoryFeatureProvider();
+            //options = new FeatureFlagOptions()
+            //    .UseInMemoryFeatureProvider();
                 // .UseCachedSqlFeatureProvider(Configuration.GetConnectionString("localDb"));
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            ConfigureInspectionServices(services);
             services.AddFeatureFlags(options);
         }
 
+        private void ConfigureInspectionServices(IServiceCollection services)
+        {
+
+            var projectionStoreBaseUrl = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreBaseUrl];
+            var projectionStoreUserName = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreUserName];
+            var projectionStoreUserPassword = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreUserPassword];
+            var projectionStoreClusterName = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreClusterName];
+            var projectionStoreDatabaseName = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreDatabaseName];
+            var projectionStoreWriteRetries = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreWriteRetries];
+            var projectionStoreWriteConcern = Configuration[ConfigurationAppsettingKeyNameConstants.ProjectionStoreWriteConcern];
+            var projectionStoreConnectionString = $"{projectionStoreBaseUrl}{projectionStoreUserName}:{projectionStoreUserPassword}@{projectionStoreClusterName}/{projectionStoreDatabaseName}?retryWrites={projectionStoreWriteRetries}&w={projectionStoreWriteConcern}";
+
+            options = new FeatureFlagOptions()
+               .UseMongoDBFeatureProvider(new MongoClient(projectionStoreConnectionString));
+        }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

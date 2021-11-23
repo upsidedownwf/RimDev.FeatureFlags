@@ -1,3 +1,4 @@
+using MongoDB.Driver;
 using System;
 
 namespace RimDev.AspNetCore.FeatureFlags
@@ -20,7 +21,17 @@ namespace RimDev.AspNetCore.FeatureFlags
 
             return options;
         }
+        public static FeatureFlagOptions UseMongoDBFeatureProvider(
+            this FeatureFlagOptions options,
+            IMongoClient mongoClient)
+        {
 
+            options.Provider = new MongoDBFeatureProvider(
+                options.FeatureFlagAssemblies,
+                mongoClient);
+
+            return options;
+        }
         /// <summary>
         /// This should only be used for testing as values
         /// are not persisted to any long term storage.

@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>bacf8b21-0bfa-4b27-b555-0b10785a11bf</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.12.4" />
     <ProjectReference Include="..\..\src\RimDev.AspNetCore.FeatureFlags\RimDev.AspNetCore.FeatureFlags.csproj" />
   </ItemGroup>
 
